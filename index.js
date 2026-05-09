@@ -1,14 +1,18 @@
-import * as line from '@line/bot-sdk'
-import express from 'express'
+import * as line from "@line/bot-sdk";
+import express from "express";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 // create LINE SDK config from env variables
 const config = {
-  channelSecret: "dac02cb36d732ee21fea69f1b98e326f",
+  //   channelSecret: "dac02cb36d732ee21fea69f1b98e326f",
+  channelSecret: process.env.LINE_CHANNEL_SECRET,
 };
 
 // create LINE SDK client
 const client = line.LineBotClient.fromChannelAccessToken({
-  channelAccessToken: "XhwyGA9ERqNpbwTdVx67OBLFmLSJwt/AbEQQs28zMwdyl8ZiFFTMJ6xbLmnGjiqYJcwish9b+FuHmwoeVgebUAq4WB3WmjQsM/J0PfpXKyLv3orUfv0D9mW9lgmNXa086WQ/Go8VMJVpYnyJN3V19wdB04t89/1O/w1cDnyilFU="
+  //   channelAccessToken: "XhwyGA9ERqNpbwTdVx67OBLFmLSJwt/AbEQQs28zMwdyl8ZiFFTMJ6xbLmnGjiqYJcwish9b+FuHmwoeVgebUAq4WB3WmjQsM/J0PfpXKyLv3orUfv0D9mW9lgmNXa086WQ/Go8VMJVpYnyJN3V19wdB04t89/1O/w1cDnyilFU="
+  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
 });
 
 // create Express app
@@ -16,28 +20,27 @@ const client = line.LineBotClient.fromChannelAccessToken({
 const app = express();
 
 // test endpoint
-app.get('/callback', (req, res) => {
-  console.log('✅ GET /callback called');
-  res.json({ status: 'ok', message: 'Webhook is working' });
+app.get("/callback", (req, res) => {
+  console.log("✅ GET /callback called");
+  res.json({ status: "ok", message: "Webhook is working" });
 });
 
 // register a webhook handler with middleware
 // about the middleware, please refer to doc
-app.post('/callback', (req, res) => {
-  console.log('📨 Request received at /callback');
-  console.log('Headers:', req.headers);
-  console.log('Body:', JSON.stringify(req.body, null, 2));
-  
+app.post("/callback", (req, res) => {
+  console.log("📨 Request received at /callback");
+  console.log("Headers:", req.headers);
+  console.log("Body:", JSON.stringify(req.body, null, 2));
+
   line.middleware(config)(req, res, () => {
-    console.log('✅ Middleware verified successfully');
-    Promise
-      .all(req.body.events.map(handleEvent))
+    console.log("✅ Middleware verified successfully");
+    Promise.all(req.body.events.map(handleEvent))
       .then((result) => {
-        console.log('✅ Reply sent:', result);
+        console.log("✅ Reply sent:", result);
         res.json(result);
       })
       .catch((err) => {
-        console.error('❌ Error:', err);
+        console.error("❌ Error:", err);
         res.status(500).end();
       });
   });
@@ -45,13 +48,13 @@ app.post('/callback', (req, res) => {
 
 // event handler
 function handleEvent(event) {
-  if (event.type !== 'message' || event.message.type !== 'text') {
+  if (event.type !== "message" || event.message.type !== "text") {
     // ignore non-text-message event
     return Promise.resolve(null);
   }
 
   // create an echoing text message
-  const echo = { type: 'text', text: event.message.text };
+  const echo = { type: "text", text: `คุณพิมพ์ว่า: ${event.message.text}` };
 
   // use reply API
   return client.replyMessage({
@@ -60,8 +63,12 @@ function handleEvent(event) {
   });
 }
 
+app.get("/", (req, res) => {
+  res.send("hello world, Sorawich is here!");
+});
+
 // listen on port
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3019;
 app.listen(port, () => {
   console.log(`listening on ${port}`);
 });

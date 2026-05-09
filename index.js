@@ -64,7 +64,7 @@ function handleEvent(event) {
 }
 
 app.get("/", (req, res) => {
-  res.send("hello world, Sorawich is here!");
+  res.send("hello world, Sorawich Sudamart is here!");
 });
 
 // listen on port
